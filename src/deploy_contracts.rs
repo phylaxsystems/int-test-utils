@@ -23,8 +23,8 @@ fn get_anvil_deployer(anvil_instance: &AnvilInstance) -> SigningKey {
 ///
 /// # Arguments
 ///
-/// * `rpc_url` - The RPC URL for the blockchain node
-/// * `funder_private_key` - Private key for funding the deployment
+/// * `anvil` - The Anvil instance to deploy to
+/// * `project_root` - Root directory of the project
 ///
 /// # Returns
 ///
@@ -66,14 +66,14 @@ pub struct Contracts {
 ///
 /// # Arguments
 ///
-/// * `rpc_url` - The RPC URL for the blockchain node
-/// * `deployer_private_key` - Private key for the deployer account
-/// * `faucet_private_key` - Private key for the faucet account to fund the deployer
+/// * `anvil` - The Anvil instance to deploy to
 /// * `assertion_da_private_key` - Private key for the DA prover
+/// * `project_root` - Root directory of the project
+/// * `state_oracle_assertion_timelock_blocks` - Number of blocks to timelock assertions for
 ///
 /// # Returns
 ///
-/// * `Result<(), Box<dyn Error>>` - Success or error
+/// * `Result<Contracts, DeployContractsError>` - The deployed contract addresses or an error
 pub fn deploy_contracts(
     anvil: &AnvilInstance,
     assertion_da_private_key: SigningKey,
