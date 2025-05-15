@@ -1,0 +1,3 @@
+[submodule "lib/credible-layer-contracts"]
+	path = lib/credible-layer-contracts
+	url = git@github.com:phylaxsystems/credible-layer-contracts.git
