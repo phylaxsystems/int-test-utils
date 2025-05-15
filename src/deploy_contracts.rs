@@ -24,7 +24,8 @@ fn get_anvil_deployer(anvil_instance: &AnvilInstance) -> SigningKey {
 /// # Arguments
 ///
 /// * `anvil` - The Anvil instance to deploy to
-/// * `project_root` - Root directory of the project
+/// * `project_root` - Root directory of the credible-layer-contracts repo
+///
 ///
 /// # Returns
 ///
@@ -68,7 +69,7 @@ pub struct Contracts {
 ///
 /// * `anvil` - The Anvil instance to deploy to
 /// * `assertion_da_private_key` - Private key for the DA prover
-/// * `project_root` - Root directory of the project
+/// * `project_root` - Root directory of the credible-layer-contracts repo
 /// * `state_oracle_assertion_timelock_blocks` - Number of blocks to timelock assertions for
 ///
 /// # Returns
