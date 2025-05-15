@@ -4,3 +4,10 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+thiserror = "2.0.12"
+alloy-primitives = { version = "1.1.0", features = ["getrandom", "k256", "rand"] }
+alloy-signer = "1.0.3"
+alloy-node-bindings = "1.0.3"
+
+[dev-dependencies]
+rand = "0.8"
