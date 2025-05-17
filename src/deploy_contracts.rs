@@ -54,7 +54,10 @@ pub fn deploy_create_factory(
     if !status.success() {
         let output = cmd.output()?;
         let err_str = String::from_utf8_lossy(&output.stderr);
-        return Err(DeployContractsError::CommandError(status, err_str.to_string()));
+        return Err(DeployContractsError::CommandError(
+            status,
+            err_str.to_string(),
+        ));
     }
 
     Ok(())
@@ -129,15 +132,17 @@ pub fn deploy_contracts(
     } else {
         let output = cmd.output()?;
         let err_str = String::from_utf8_lossy(&output.stderr);
-        Err(DeployContractsError::CommandError(status, err_str.to_string()))
+        Err(DeployContractsError::CommandError(
+            status,
+            err_str.to_string(),
+        ))
     }
 }
 #[cfg(test)]
 mod tests {
     use super::*;
-    use alloy::consensus::TxEip1559;
-    use alloy::consensus::transaction::RlpEcdsaTx;
-    use alloy::network::{EthereumWallet, TransactionBuilder, TxSigner};
+
+    use alloy::network::{EthereumWallet, TransactionBuilder};
     use alloy::node_bindings::{Anvil, AnvilInstance};
     use alloy::primitives::{Address, TxKind, U256};
     use alloy::providers::{Provider, ProviderBuilder};
@@ -203,7 +208,7 @@ mod tests {
             U256::ZERO
         };
 
-        let mut tx = TransactionRequest {
+        let tx = TransactionRequest {
             from: Some(deployer_address),
             to: Some(TxKind::Call(drain_to)),
             value: Some(value),
