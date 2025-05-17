@@ -31,13 +31,10 @@ fn get_anvil_deployer(anvil_instance: &AnvilInstance) -> SigningKey {
 ///
 /// * `Result<(), DeployContractsError>` - Success or error
 pub fn deploy_create_factory(
-    anvil: &AnvilInstance,
+    funder_private_key: &SigningKey,
     project_root: std::path::PathBuf,
+    rpc_url: &str,
 ) -> Result<(), DeployContractsError> {
-    let rpc_url = anvil.endpoint();
-
-    let funder_private_key = get_anvil_deployer(anvil);
-
     let funder_pk_bytes = funder_private_key.to_bytes();
     let script_path = project_root.join("shell/deploy_create_x.sh");
     let fmt_funder_key = format!("{funder_pk_bytes:x}");
@@ -90,7 +87,11 @@ pub fn deploy_contracts(
 
     let rpc_url = anvil.endpoint();
     // Validate inputs
-    deploy_create_factory(anvil, project_root.clone())?;
+    deploy_create_factory(
+        &deployer_private_key,
+        project_root.clone(),
+        &anvil.endpoint(),
+    )?;
 
     let project_root = project_root.to_string_lossy();
 
@@ -254,9 +255,11 @@ mod tests {
     fn test_deploy_create_factory() -> Result<(), Box<dyn Error>> {
         let anvil = setup_anvil()?;
 
+        let deployer_key = get_anvil_deployer(&anvil);
         let result = deploy_create_factory(
-            &anvil,
+            &deployer_key,
             std::path::PathBuf::from("lib/credible-layer-contracts"),
+            &anvil.endpoint(),
         );
 
         // Check deployment result
