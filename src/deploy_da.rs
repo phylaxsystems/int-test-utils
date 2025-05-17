@@ -8,7 +8,6 @@ use tokio_util::sync::CancellationToken;
 ///
 /// * `JoinHandle<()>` - Handle to the server task
 /// * `SocketAddr` - Socket address the server is bound to
-
 pub async fn deploy_test_da(
     private_key: SigningKey,
 ) -> (JoinHandle<anyhow::Result<()>>, SocketAddr) {
