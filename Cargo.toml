@@ -5,9 +5,8 @@ edition = "2024"
 
 [dependencies]
 thiserror = "2.0.12"
-alloy-primitives = { version = "1.1.0", features = ["getrandom", "k256", "rand"] }
-alloy-signer = "1.0.3"
-alloy-node-bindings = "1.0.3"
+alloy= { version = "0.11.1", features = ["full", "node-bindings", "json-rpc", "rpc-client", "signer-local", "k256", "rand", "rlp"] }
 
 [dev-dependencies]
 rand = "0.8"
+tokio = "1.45.0"

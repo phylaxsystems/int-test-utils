@@ -1,15 +1,15 @@
-use alloy_signer::k256::ecdsa::SigningKey;
+use alloy::signers::k256::ecdsa::SigningKey;
 use std::process::{Command, ExitStatus, Stdio};
 
-use alloy_node_bindings::AnvilInstance;
-use alloy_primitives::{Address, address};
+use alloy::node_bindings::AnvilInstance;
+use alloy::primitives::{Address, address};
 use std::io;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum DeployContractsError {
-    #[error("Command execution failed: {0}")]
-    CommandError(ExitStatus),
+    #[error("Command execution failed. Exit Status: {0}, Error: {1}")]
+    CommandError(ExitStatus, String),
     #[error("IO error: {0}")]
     IoError(#[from] io::Error),
 }
@@ -52,7 +52,9 @@ pub fn deploy_create_factory(
 
     let status = cmd.status()?;
     if !status.success() {
-        return Err(DeployContractsError::CommandError(status));
+        let output = cmd.output()?;
+        let err_str = String::from_utf8_lossy(&output.stderr);
+        return Err(DeployContractsError::CommandError(status, err_str.to_string()));
     }
 
     Ok(())
@@ -107,11 +109,11 @@ pub fn deploy_contracts(
             state_oracle_assertion_timelock_blocks.to_string(),
         )
         .env("STATE_ORACLE_ADMIN_ADDRESS", {
-            let address = alloy_primitives::Address::from_private_key(&deployer_private_key);
+            let address = Address::from_private_key(&deployer_private_key);
             format!("{:#x}", address)
         })
         .env("DA_PROVER_ADDRESS", {
-            let address = alloy_primitives::Address::from_private_key(&assertion_da_private_key);
+            let address = Address::from_private_key(&assertion_da_private_key);
             format!("{:#x}", address)
         })
         .stdout(Stdio::piped())
@@ -125,17 +127,22 @@ pub fn deploy_contracts(
             state_oracle: address!("f4e6da19139B9846b7d8712A05C218d9109b4308"),
         })
     } else {
-        eprintln!(
-            "Script execution failed with exit code: {:?}",
-            status.code()
-        );
-        Err(DeployContractsError::CommandError(status))
+        let output = cmd.output()?;
+        let err_str = String::from_utf8_lossy(&output.stderr);
+        Err(DeployContractsError::CommandError(status, err_str.to_string()))
     }
 }
 #[cfg(test)]
 mod tests {
     use super::*;
-    use alloy_node_bindings::{Anvil, AnvilInstance};
+    use alloy::consensus::TxEip1559;
+    use alloy::consensus::transaction::RlpEcdsaTx;
+    use alloy::network::{EthereumWallet, TransactionBuilder, TxSigner};
+    use alloy::node_bindings::{Anvil, AnvilInstance};
+    use alloy::primitives::{Address, TxKind, U256};
+    use alloy::providers::{Provider, ProviderBuilder};
+    use alloy::rpc::types::TransactionRequest;
+    use alloy::signers::{k256::ecdsa::SigningKey, local::LocalSigner};
     use std::error::Error;
 
     fn setup_anvil() -> Result<AnvilInstance, Box<dyn Error>> {
@@ -167,8 +174,79 @@ mod tests {
         Ok(())
     }
 
+    #[tokio::test]
+    async fn test_deploy_contracts_fails_without_funds() -> Result<(), Box<dyn Error>> {
+        let anvil = setup_anvil()?;
+
+        // Generate a key and drain its funds
+        let deployer_key = get_anvil_deployer(&anvil);
+        let deployer_address = Address::from_private_key(&deployer_key);
+
+        // Send all funds to a different address
+        let drain_to = Address::random();
+        let provider = ProviderBuilder::new().on_http(anvil.endpoint().parse()?);
+        let balance = provider.get_balance(deployer_address).await?;
+
+        let wallet = LocalSigner::from(deployer_key.clone());
+        let wallet = EthereumWallet::from(wallet);
+        let chain_id = provider.get_chain_id().await?;
+
+        // Build the transaction
+        let nonce = provider.get_transaction_count(deployer_address).await?;
+
+        let gas_price = provider.get_gas_price().await?;
+        let gas_limit = U256::from(21_000u64);
+        let gas_cost = gas_limit * U256::from(gas_price);
+        let value = if balance > gas_cost {
+            balance - gas_cost
+        } else {
+            U256::ZERO
+        };
+
+        let mut tx = TransactionRequest {
+            from: Some(deployer_address),
+            to: Some(TxKind::Call(drain_to)),
+            value: Some(value),
+            chain_id: Some(chain_id),
+            nonce: Some(nonce),
+            max_fee_per_gas: Some(gas_price),
+            max_priority_fee_per_gas: Some(50),
+            gas: Some(gas_limit.try_into().unwrap()),
+            gas_price: Some(gas_price),
+
+            ..Default::default()
+        };
+
+        let tx = tx.build(&wallet).await?;
+        let pending_tx = provider.send_tx_envelope(tx).await?;
+        let rcpt = pending_tx.get_receipt().await?;
+
+        // Assert the transaction receipt exists and succeeded
+        assert!(
+            rcpt.status(),
+            "Draining transaction failed or was not mined"
+        );
+
+        println!("Deploying contracts");
+        let result = deploy_contracts(
+            &anvil,
+            deployer_key,
+            std::path::PathBuf::from("lib/credible-layer-contracts"),
+            5,
+        );
+
+        // Check deployment fails
+        assert!(
+            result.is_err(),
+            "Contract deployment should have failed but succeeded"
+        );
+        let res_str = result.err().unwrap().to_string();
+        assert!(res_str.contains("Insufficient funds"));
+        Ok(())
+    }
+
     #[test]
-    fn test_deploy_deployer() -> Result<(), Box<dyn Error>> {
+    fn test_deploy_create_factory() -> Result<(), Box<dyn Error>> {
         let anvil = setup_anvil()?;
 
         let result = deploy_create_factory(
