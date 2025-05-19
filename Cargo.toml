@@ -6,7 +6,18 @@ edition = "2024"
 [dependencies]
 thiserror = "2.0.12"
 alloy= { version = "0.11.1", features = ["full", "node-bindings", "json-rpc", "rpc-client", "signer-local", "k256", "rand", "rlp"] }
-
-[dev-dependencies]
+assertion-da-server = { git = "ssh://git@github.com/phylaxsystems/assertion-da.git", rev = "ea880865dd201758166d70ea49711b45d393036d" }
+sled = { version = "1.0.0-alpha.122" }
 rand = "0.8"
 tokio = "1.45.0"
+tokio-util = "0.7.15"
+tempfile = "3.20.0"
+tracing = "0.1.41"
+anyhow = "1.0.98"
+bollard = "0.18"
+
+[dev-dependencies]
+tempfile = "3.20.0"
+tracing = "0.1.41"
+assertion-da-client = { git = "ssh://git@github.com/phylaxsystems/assertion-da.git", rev = "ea880865dd201758166d70ea49711b45d393036d" }
+

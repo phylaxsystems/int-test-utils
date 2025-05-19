@@ -47,13 +47,11 @@ pub fn deploy_create_factory(
         .stdout(Stdio::piped())
         .stderr(Stdio::piped());
 
-    let status = cmd.status()?;
-    if !status.success() {
-        let output = cmd.output()?;
-        let err_str = String::from_utf8_lossy(&output.stderr);
+    let output = cmd.output()?;
+    if !output.status.success() {
         return Err(DeployContractsError::CommandError(
-            status,
-            err_str.to_string(),
+            output.status,
+            String::from_utf8_lossy(&output.stderr).to_string(),
         ));
     }
 
@@ -123,19 +121,17 @@ pub fn deploy_contracts(
         .stdout(Stdio::piped())
         .stderr(Stdio::piped());
 
-    let status = cmd.status()?;
+    let output = cmd.output()?;
 
     // Check if the script executed successfully
-    if status.success() {
+    if output.status.success() {
         Ok(Contracts {
             state_oracle: address!("f4e6da19139B9846b7d8712A05C218d9109b4308"),
         })
     } else {
-        let output = cmd.output()?;
-        let err_str = String::from_utf8_lossy(&output.stderr);
         Err(DeployContractsError::CommandError(
-            status,
-            err_str.to_string(),
+            output.status,
+            String::from_utf8_lossy(&output.stderr).to_string(),
         ))
     }
 }
@@ -247,7 +243,7 @@ mod tests {
             "Contract deployment should have failed but succeeded"
         );
         let res_str = result.err().unwrap().to_string();
-        assert!(res_str.contains("Insufficient funds"));
+        assert!(res_str.contains("Insufficient funds"), "{}", res_str);
         Ok(())
     }
 
