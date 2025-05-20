@@ -41,7 +41,7 @@ pub fn start_dapp(
             output.status,
             format!(
                 "Installing dapp failed: {}",
-                String::from_utf8_lossy(&output.stderr).to_string()
+                String::from_utf8_lossy(&output.stderr)
             ),
         ));
     }
@@ -54,7 +54,7 @@ pub fn start_dapp(
             output.status,
             format!(
                 "Starting database failed: {}",
-                String::from_utf8_lossy(&output.stderr).to_string()
+                String::from_utf8_lossy(&output.stderr)
             ),
         ));
     };
@@ -68,7 +68,7 @@ pub fn start_dapp(
             .current_dir(project_root)
             .arg("dev")
             .arg("--port")
-            .arg(&port.to_string())
+            .arg(port.to_string())
             .env("NEXT_PUBLIC_SANDBOX_RPC_URL", &rpc_url)
             .env("ASSERTION_DA_URL", &da_url)
             .stdout(Stdio::inherit())
