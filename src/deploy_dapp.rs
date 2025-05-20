@@ -149,7 +149,11 @@ mod tests {
 
         let result = deploy_dapp(&project_root, rpc_url, da_url);
         // This will fail if pnpm or mise is not installed, or if the submodule is missing
-        assert!(result.is_ok(), "Failed to deploy dapp: {:#?}", result.err().unwrap());
+        assert!(
+            result.is_ok(),
+            "Failed to deploy dapp: {:#?}",
+            result.err().unwrap()
+        );
         let (port, mut child) = result.unwrap();
         let url = format!("http://localhost:{port}/api/health",);
         let response = reqwest::get(url).await.unwrap();
