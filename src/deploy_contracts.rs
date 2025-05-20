@@ -14,7 +14,7 @@ pub enum DeployContractsError {
     IoError(#[from] io::Error),
 }
 
-fn get_anvil_deployer(anvil_instance: &AnvilInstance) -> SigningKey {
+pub fn get_anvil_deployer(anvil_instance: &AnvilInstance) -> SigningKey {
     // Get the first private key from anvil's default accounts
     anvil_instance.keys()[0].clone().into()
 }
