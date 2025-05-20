@@ -112,11 +112,11 @@ pub fn deploy_contracts(
         )
         .env("STATE_ORACLE_ADMIN_ADDRESS", {
             let address = Address::from_private_key(&deployer_private_key);
-            format!("{:#x}", address)
+            format!("{address:#x}")
         })
         .env("DA_PROVER_ADDRESS", {
             let address = Address::from_private_key(&assertion_da_private_key);
-            format!("{:#x}", address)
+            format!("{address:#x}")
         })
         .stdout(Stdio::piped())
         .stderr(Stdio::piped());
@@ -243,7 +243,10 @@ mod tests {
             "Contract deployment should have failed but succeeded"
         );
         let res_str = result.err().unwrap().to_string();
-        assert!(res_str.contains("Insufficient funds"), "{}", res_str);
+        assert!(
+            res_str.contains("Insufficient funds"),
+            "Expected error to contain 'Insufficient funds', got: {res_str}"
+        );
         Ok(())
     }
 

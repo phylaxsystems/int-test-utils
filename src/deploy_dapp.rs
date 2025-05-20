@@ -88,7 +88,7 @@ pub fn start_dapp(
     // Block until the port is available or timeout
     let start = Instant::now();
     let timeout = Duration::from_secs(60);
-    let addr = format!("127.0.0.1:{}", port);
+    let addr = format!("127.0.0.1:{port}");
     while start.elapsed() < timeout {
         if let Some(status) = child.try_wait().unwrap() {
             // Process exited before port was available
