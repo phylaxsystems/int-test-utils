@@ -13,7 +13,7 @@ jobs:
       rust-channel: "nightly"
       require-lockfile: true
       install-foundry: true
-      install-pnpm: true
+      install-dapp-dependencies: true
       submodules: "recursive"
       dind: true
       requires-private-deps: true
