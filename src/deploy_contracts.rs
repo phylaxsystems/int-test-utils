@@ -5,6 +5,7 @@ use alloy::node_bindings::AnvilInstance;
 use alloy::primitives::{Address, address};
 use std::io;
 use thiserror::Error;
+use std::str::FromStr;
 
 #[derive(Error, Debug)]
 pub enum DeployContractsError {
@@ -127,11 +128,37 @@ pub fn deploy_contracts(
 
     // Check if the script executed successfully
     if output.status.success() {
-        Ok(Contracts {
-            state_oracle: address!("0xCe6E6c190afD8b10f589B2aAE8120caF2D3801A0"),
-            admin_verifier: address!("0x551cd36407BD37040536D3E0C049332873Eb8EAC"),
-            da_verifier: address!("0xce30454A00C77485C0862A2b486d91d6fA758dA4"),
-        })
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        let mut state_oracle = None;
+        let mut admin_verifier = None;
+        let mut da_verifier = None;
+        for line in stdout.lines() {
+            if let Some(addr) = line.strip_prefix("  State Oracle Proxy deployed at ") {
+                state_oracle = Some(addr.trim().to_string());
+            } else if let Some(addr) = line.strip_prefix("  Admin Verifier deployed at ") {
+                admin_verifier = Some(addr.trim().to_string());
+            } else if let Some(addr) = line.strip_prefix("  DA Verifier deployed at ") {
+                da_verifier = Some(addr.trim().to_string());
+            }
+        }
+        match (state_oracle, admin_verifier, da_verifier) {
+            (Some(state_oracle), Some(admin_verifier), Some(da_verifier)) => {
+                let state_oracle = Address::from_str(&state_oracle).map_err(|e| DeployContractsError::CommandError(output.status, format!("Failed to parse state_oracle address: {e}")))?;
+                let admin_verifier = Address::from_str(&admin_verifier).map_err(|e| DeployContractsError::CommandError(output.status, format!("Failed to parse admin_verifier address: {e}")))?;
+                let da_verifier = Address::from_str(&da_verifier).map_err(|e| DeployContractsError::CommandError(output.status, format!("Failed to parse da_verifier address: {e}")))?;
+                Ok(Contracts {
+                    state_oracle,
+                    admin_verifier,
+                    da_verifier,
+                })
+            }
+            _ => {
+                Err(DeployContractsError::CommandError(
+                    output.status,
+                    format!("Failed to parse contract addresses from output: {stdout}"),
+                ))
+            }
+        }
     } else {
         Err(DeployContractsError::CommandError(
             output.status,
