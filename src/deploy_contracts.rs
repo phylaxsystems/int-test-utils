@@ -61,6 +61,8 @@ pub fn deploy_create_factory(
 #[derive(Debug)]
 pub struct Contracts {
     pub state_oracle: Address,
+    pub admin_verifier: Address,
+    pub da_verifier: Address,
 }
 
 /// Deploy contracts using the provided configuration
@@ -126,7 +128,9 @@ pub fn deploy_contracts(
     // Check if the script executed successfully
     if output.status.success() {
         Ok(Contracts {
-            state_oracle: address!("f4e6da19139B9846b7d8712A05C218d9109b4308"),
+            state_oracle: address!("0xCe6E6c190afD8b10f589B2aAE8120caF2D3801A0"),
+            admin_verifier: address!("0x551cd36407BD37040536D3E0C049332873Eb8EAC"),
+            da_verifier: address!("0xce30454A00C77485C0862A2b486d91d6fA758dA4"),
         })
     } else {
         Err(DeployContractsError::CommandError(
