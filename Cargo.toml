@@ -20,4 +20,5 @@ bollard = "0.18"
 tempfile = "3.20.0"
 tracing = "0.1.41"
 assertion-da-client = { git = "ssh://git@github.com/phylaxsystems/assertion-da.git", rev = "ea880865dd201758166d70ea49711b45d393036d" }
+reqwest = "0.12.15"
 

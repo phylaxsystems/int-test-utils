@@ -5,6 +5,7 @@ use alloy::node_bindings::AnvilInstance;
 use alloy::primitives::{Address, address};
 use std::io;
 use thiserror::Error;
+use std::str::FromStr;
 
 #[derive(Error, Debug)]
 pub enum DeployContractsError {
@@ -14,7 +15,7 @@ pub enum DeployContractsError {
     IoError(#[from] io::Error),
 }
 
-fn get_anvil_deployer(anvil_instance: &AnvilInstance) -> SigningKey {
+pub fn get_anvil_deployer(anvil_instance: &AnvilInstance) -> SigningKey {
     // Get the first private key from anvil's default accounts
     anvil_instance.keys()[0].clone().into()
 }
@@ -61,6 +62,8 @@ pub fn deploy_create_factory(
 #[derive(Debug)]
 pub struct Contracts {
     pub state_oracle: Address,
+    pub admin_verifier: Address,
+    pub da_verifier: Address,
 }
 
 /// Deploy contracts using the provided configuration
@@ -112,11 +115,11 @@ pub fn deploy_contracts(
         )
         .env("STATE_ORACLE_ADMIN_ADDRESS", {
             let address = Address::from_private_key(&deployer_private_key);
-            format!("{:#x}", address)
+            format!("{address:#x}")
         })
         .env("DA_PROVER_ADDRESS", {
             let address = Address::from_private_key(&assertion_da_private_key);
-            format!("{:#x}", address)
+            format!("{address:#x}")
         })
         .stdout(Stdio::piped())
         .stderr(Stdio::piped());
@@ -125,9 +128,37 @@ pub fn deploy_contracts(
 
     // Check if the script executed successfully
     if output.status.success() {
-        Ok(Contracts {
-            state_oracle: address!("f4e6da19139B9846b7d8712A05C218d9109b4308"),
-        })
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        let mut state_oracle = None;
+        let mut admin_verifier = None;
+        let mut da_verifier = None;
+        for line in stdout.lines() {
+            if let Some(addr) = line.strip_prefix("  State Oracle Proxy deployed at ") {
+                state_oracle = Some(addr.trim().to_string());
+            } else if let Some(addr) = line.strip_prefix("  Admin Verifier deployed at ") {
+                admin_verifier = Some(addr.trim().to_string());
+            } else if let Some(addr) = line.strip_prefix("  DA Verifier deployed at ") {
+                da_verifier = Some(addr.trim().to_string());
+            }
+        }
+        match (state_oracle, admin_verifier, da_verifier) {
+            (Some(state_oracle), Some(admin_verifier), Some(da_verifier)) => {
+                let state_oracle = Address::from_str(&state_oracle).map_err(|e| DeployContractsError::CommandError(output.status, format!("Failed to parse state_oracle address: {e}")))?;
+                let admin_verifier = Address::from_str(&admin_verifier).map_err(|e| DeployContractsError::CommandError(output.status, format!("Failed to parse admin_verifier address: {e}")))?;
+                let da_verifier = Address::from_str(&da_verifier).map_err(|e| DeployContractsError::CommandError(output.status, format!("Failed to parse da_verifier address: {e}")))?;
+                Ok(Contracts {
+                    state_oracle,
+                    admin_verifier,
+                    da_verifier,
+                })
+            }
+            _ => {
+                Err(DeployContractsError::CommandError(
+                    output.status,
+                    format!("Failed to parse contract addresses from output: {stdout}"),
+                ))
+            }
+        }
     } else {
         Err(DeployContractsError::CommandError(
             output.status,
@@ -243,7 +274,10 @@ mod tests {
             "Contract deployment should have failed but succeeded"
         );
         let res_str = result.err().unwrap().to_string();
-        assert!(res_str.contains("Insufficient funds"), "{}", res_str);
+        assert!(
+            res_str.contains("Insufficient funds"),
+            "Expected error to contain 'Insufficient funds', got: {res_str}"
+        );
         Ok(())
     }
 
