@@ -4,3 +4,4 @@
 [submodule "lib/credible-layer-dapp"]
 	path = lib/credible-layer-dapp
 	url = git@github.com:phylaxsystems/credible-layer-dapp.git
+	branch = develop
