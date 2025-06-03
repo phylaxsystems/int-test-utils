@@ -1,11 +1,15 @@
 use alloy::signers::k256::ecdsa::SigningKey;
-use std::process::{Command, ExitStatus, Stdio};
+use std::process::{
+    Command,
+    ExitStatus,
+    Stdio,
+};
 
 use alloy::node_bindings::AnvilInstance;
-use alloy::primitives::{Address, address};
+use alloy::primitives::Address;
 use std::io;
-use thiserror::Error;
 use std::str::FromStr;
+use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum DeployContractsError {
@@ -143,9 +147,24 @@ pub fn deploy_contracts(
         }
         match (state_oracle, admin_verifier, da_verifier) {
             (Some(state_oracle), Some(admin_verifier), Some(da_verifier)) => {
-                let state_oracle = Address::from_str(&state_oracle).map_err(|e| DeployContractsError::CommandError(output.status, format!("Failed to parse state_oracle address: {e}")))?;
-                let admin_verifier = Address::from_str(&admin_verifier).map_err(|e| DeployContractsError::CommandError(output.status, format!("Failed to parse admin_verifier address: {e}")))?;
-                let da_verifier = Address::from_str(&da_verifier).map_err(|e| DeployContractsError::CommandError(output.status, format!("Failed to parse da_verifier address: {e}")))?;
+                let state_oracle = Address::from_str(&state_oracle).map_err(|e| {
+                    DeployContractsError::CommandError(
+                        output.status,
+                        format!("Failed to parse state_oracle address: {e}"),
+                    )
+                })?;
+                let admin_verifier = Address::from_str(&admin_verifier).map_err(|e| {
+                    DeployContractsError::CommandError(
+                        output.status,
+                        format!("Failed to parse admin_verifier address: {e}"),
+                    )
+                })?;
+                let da_verifier = Address::from_str(&da_verifier).map_err(|e| {
+                    DeployContractsError::CommandError(
+                        output.status,
+                        format!("Failed to parse da_verifier address: {e}"),
+                    )
+                })?;
                 Ok(Contracts {
                     state_oracle,
                     admin_verifier,
@@ -170,12 +189,28 @@ pub fn deploy_contracts(
 mod tests {
     use super::*;
 
-    use alloy::network::{EthereumWallet, TransactionBuilder};
-    use alloy::node_bindings::{Anvil, AnvilInstance};
-    use alloy::primitives::{Address, TxKind, U256};
-    use alloy::providers::{Provider, ProviderBuilder};
+    use alloy::network::{
+        EthereumWallet,
+        TransactionBuilder,
+    };
+    use alloy::node_bindings::{
+        Anvil,
+        AnvilInstance,
+    };
+    use alloy::primitives::{
+        Address,
+        TxKind,
+        U256,
+    };
+    use alloy::providers::{
+        Provider,
+        ProviderBuilder,
+    };
     use alloy::rpc::types::TransactionRequest;
-    use alloy::signers::{k256::ecdsa::SigningKey, local::LocalSigner};
+    use alloy::signers::{
+        k256::ecdsa::SigningKey,
+        local::LocalSigner,
+    };
     use std::error::Error;
 
     fn setup_anvil() -> Result<AnvilInstance, Box<dyn Error>> {
