@@ -1,5 +1,9 @@
 use alloy::signers::k256::ecdsa::SigningKey;
-use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+use std::net::{
+    IpAddr,
+    Ipv4Addr,
+    SocketAddr,
+};
 use tokio::task::JoinHandle;
 use tokio_util::sync::CancellationToken;
 /// Deploy a local DA server for testing to a random unused port.

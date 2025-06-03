@@ -1060,8 +1060,8 @@ dependencies = [
 
 [[package]]
 name = "assertion-da-client"
-version = "0.1.0"
-source = "git+ssh://git@github.com/phylaxsystems/assertion-da.git?rev=ea880865dd201758166d70ea49711b45d393036d#ea880865dd201758166d70ea49711b45d393036d"
+version = "0.1.2"
+source = "git+ssh://git@github.com/phylaxsystems/assertion-da.git?tag=0.1.2#48edd1137fedbca4f84413ebb84adb2a9af67888"
 dependencies = [
  "alloy 0.11.1",
  "assertion-da-core",
@@ -1075,8 +1075,8 @@ dependencies = [
 
 [[package]]
 name = "assertion-da-core"
-version = "0.1.0"
-source = "git+ssh://git@github.com/phylaxsystems/assertion-da.git?rev=ea880865dd201758166d70ea49711b45d393036d#ea880865dd201758166d70ea49711b45d393036d"
+version = "0.1.2"
+source = "git+ssh://git@github.com/phylaxsystems/assertion-da.git?tag=0.1.2#48edd1137fedbca4f84413ebb84adb2a9af67888"
 dependencies = [
  "alloy 0.11.1",
  "serde",
@@ -1084,8 +1084,8 @@ dependencies = [
 
 [[package]]
 name = "assertion-da-server"
-version = "0.1.0"
-source = "git+ssh://git@github.com/phylaxsystems/assertion-da.git?rev=ea880865dd201758166d70ea49711b45d393036d#ea880865dd201758166d70ea49711b45d393036d"
+version = "0.1.2"
+source = "git+ssh://git@github.com/phylaxsystems/assertion-da.git?tag=0.1.2#48edd1137fedbca4f84413ebb84adb2a9af67888"
 dependencies = [
  "alloy 0.11.1",
  "alloy-dyn-abi",

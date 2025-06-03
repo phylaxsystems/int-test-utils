@@ -1,8 +1,16 @@
 use std::io;
 use std::path::PathBuf;
-use std::process::{Child, Command, ExitStatus, Stdio};
+use std::process::{
+    Child,
+    Command,
+    ExitStatus,
+    Stdio,
+};
 use std::thread;
-use std::time::{Duration, Instant};
+use std::time::{
+    Duration,
+    Instant,
+};
 use thiserror::Error;
 
 #[derive(Error, Debug)]
