@@ -10,7 +10,7 @@ assertion-da-server = { git = "https://github.com/phylaxsystems/assertion-da.git
 sled = { version = "1.0.0-alpha.122" }
 rand = "0.8"
 tokio = "1.45.0"
-tokio-util = "0.7.15"
+tokio-util = "0.6.10"
 tempfile = "3.20.0"
 tracing = "0.1.41"
 anyhow = "1.0.98"
