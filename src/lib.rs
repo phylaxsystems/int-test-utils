@@ -10,6 +10,3 @@ pub use deploy_da::{
     assertion_src,
     deploy_test_da,
 };
-
-mod deploy_dapp;
-pub use deploy_dapp::deploy_dapp;
