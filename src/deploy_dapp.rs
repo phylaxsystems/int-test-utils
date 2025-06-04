@@ -79,6 +79,8 @@ pub fn start_dapp(
             .arg(port.to_string())
             .env("NEXT_PUBLIC_SANDBOX_RPC_URL", &rpc_url)
             .env("ASSERTION_DA_URL", &da_url)
+            .env("IRON_SESSION_SECRET", "Zu2mQkQLZii6LBzqxkK4bipHMuVVt8kj")
+            .env("JWT_SECRET", "super-secret-jwt-token-with-at-least-32-characters-long")
             .stdout(Stdio::inherit())
             .stderr(Stdio::piped())
             .spawn();
@@ -107,7 +109,10 @@ pub fn start_dapp(
             }
             return Err(DeployDappError::CommandError(status, stderr));
         }
-        if std::net::TcpStream::connect(&addr).is_ok() {
+        let stream_res = std::net::TcpStream::connect(&addr);
+        if stream_res.is_ok() {
+            let _ = stream_res.unwrap().shutdown(std::net::Shutdown::Both);
+            println!("Dapp started on port {}", port);
             return Ok(child);
         }
         thread::sleep(Duration::from_millis(200));
